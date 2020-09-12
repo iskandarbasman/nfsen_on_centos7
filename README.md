@@ -44,7 +44,12 @@ yum install -y httpd php wget gcc make rrdtool-devel rrdtool-perl perl-MailTools
 
 yum install -y autoconf automake apache php perl-MailTools rrdtool-perl perl-Socket6 perl-Sys-Syslog.x86_64 policycoreutils-python tcpdump
 
-echo "date.timezone = America/Denver" > /etc/php.d/timezone.ini yum update -y
+yum install -y libtool bzip2-devel-1.0.6-13.el7.x86_64
+
+echo "date.timezone = America/Denver" > /etc/php.d/timezone.ini 
+
+yum update -y
+
 ```
 
 Create the netflow user account and add it to the apache group:
@@ -61,11 +66,12 @@ mkdir -p /var/www/html/nfsen
 ```
 
 Download the latest nfdump and nfsen packages. 
-At time of this writing the latest versions are nfdump-1.6.13.tar.gz and nfsen-1.3.8.tar.gz
+At time of this writing the latest versions are nfdump-1.6.21.tar.gz and nfsen-1.3.8.tar.gz
 
 ```
 cd /opt/ 
-wget http://downloads.sourceforge.net/project/nfdump/stable/nfdump-1.6.13/nfdump-1.6.13.tar.gz 
+wget https://github.com/phaag/nfdump/archive/v1.6.21.tar.gz
+mv v1.6.21.tar.gz nfdump-1.6.21.tar.gz
 wget https://sourceforge.net/projects/nfsen/files/stable/nfsen-1.3.8/nfsen-1.3.8.tar.gz
 ```
 
@@ -80,16 +86,17 @@ service httpd start
 Untar the downloaded nfdump package into the "/opt/" Directory.
 
 ```
-tar -zxvf nfdump-1.6.13.tar.gz 
+tar -zxvf nfdump-1.6.21.tar.gz 
 ```
 
 Compile nfdump while in the "/opt/nfdump-1.6.13" directory:
 
 ```
-cd /opt/nfdump-1.6.13
+cd /opt/nfdump-1.6.21
+./autogen.sh
 ./configure --prefix=/opt/nfdump --enable-nfprofile --enable-nftrack --enable-sflow 
-autoreconf 
-make && sudo make install
+make 
+make install
 ```
 
 ## Install and configure nfsen
@@ -97,7 +104,7 @@ make && sudo make install
 Untar nfsen into the "/opt/" directory.
 
 ```
-cd ..
+
 cd /opt/
 tar -zxvf nfsen-1.3.8.tar.gz 
 cd nfsen-1.3.8
@@ -140,6 +147,10 @@ The next section we will add the "flowdoh" plugin which we will install and conf
 Save the above changes
 
 ## Run the perl installation script to install nfsen:
+## Need patch the following files due to bug
+## Latest versions on https://github.com/p-alik/nfsen
+## nfsen/install.pl
+## nfsen/libexec/NfProfile.pm
 
 ```
 cd .. 
